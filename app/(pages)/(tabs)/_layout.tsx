@@ -15,7 +15,7 @@ const TabsLayout = () => {
             }
         }}>
 
-            <Tabs.Screen name="index" options={{ headerShown: false,
+            <Tabs.Screen name="home" options={{ headerShown: false,
                 title: "Home"
              }} />
             <Tabs.Screen name="first" options={{ headerShown: false,
