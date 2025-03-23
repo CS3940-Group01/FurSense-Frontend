@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { GlobalProvider } from "../lib/global-provider";
-
+import './globals.css'
 const AppLayout = () => {
     return (
         <GlobalProvider>
