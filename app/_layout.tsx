@@ -8,6 +8,7 @@ const AppLayout = () => {
             >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="(pages)" />
+                
             </Stack>
         </GlobalProvider>
     );
