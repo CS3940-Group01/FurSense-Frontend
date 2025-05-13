@@ -1,195 +1,160 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Animated,
+  Platform,
+  KeyboardTypeOptions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useFonts } from "expo-font"; 
+import axios from "axios";
+import { GlobalContext } from "@/lib/global-provider";
 
 const SignUpScreen = () => {
-
-  const [fontsLoaded] = useFonts({
-    'Boldonse': require('../../assets/fonts/Boldonse-Regular.ttf'),
-  });
-
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [address, setAddress] = useState("");
+  const [phoneNumber, setphoneNumber] = useState("");
   const router = useRouter();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const translateY = useState(new Animated.Value(0))[0];
+  const globalContext = useContext(GlobalContext);
+
+  useEffect(() => {
+    const keyboardShowListener = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+      Animated.timing(translateY, {
+        toValue: -220,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, [translateY]);
 
   const handleSignUp = () => {
-    if (name === "" || email === "" || username === "" || password === "") {
+    if (email === "" || username === "" || password === "" || address === "" || phoneNumber === "") {
       Alert.alert("Error", "Please fill in all fields.");
       return;
     }
-    Alert.alert("Success", "Account created successfully!");
-    router.replace("/home"); 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return;
+    }
+
+    axios
+      .post("http://192.168.1.9:8080/auth/register", { username, password,email, address, phoneNumber })
+      .then((response) => {
+        if (response.status === 200) {
+          axios
+            .post("http://192.168.1.9:8080/auth/login", { username, password })
+            .then((loginResponse) => {
+              if (loginResponse.status === 200) {
+                if (globalContext) {
+                  globalContext.login(username, loginResponse.data);
+                }
+                router.replace("/home");
+              }
+            });
+          Alert.alert("Success", `Account Created Successfully! Welcome, ${username}!`);
+          console.log("Login successful:", response.data);
+        } else {
+          Alert.alert("Error", "Register Failed.");
+        }
+      });
   };
 
-  return (
-    <LinearGradient colors={["#6D4C41", "#5D4037", "#3E2723"]} style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.header}>FurSense</Text>
-        <Image source={require("../../assets/images/sign-up.png")} style={styles.logo} />
-      </View>
+  const SignUpLayout = (
+    <LinearGradient colors={["#6D4C41", "#5D4037", "#3E2723"]} style={{ flex: 1 }}>
+      <Animated.View
+        style={{
+          transform: [{ translateY }],
+          flex: 1,
+          alignItems: "center",
+          paddingTop: 20,
+        }}
+      >
+        <View className="items-center mt-10 mb-4">
+          <Text className="text-[72px] font-bold text-white font-mono">FurSense</Text>
+          <Image
+            source={require("../../assets/images/sign-up.png")}
+            className="mt-10"
+            style={{ width: 200, height: 200 }}
+            resizeMode="contain"
+          />
+        </View>
 
-      {/* Sign-Up Card */}
-      <View style={styles.cardContainer}>
-        <LinearGradient colors={["#8D6E63", "#6D4C41"]} style={styles.cardWrapper}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Create an Account</Text>
+        <View className="w-full items-center -mt-12">
+          <View className="w-11/12 p-1 rounded-2xl">
+            <View className="bg-[#EFEBE9] w-full p-5 rounded-2xl items-center shadow-lg">
+              <Text className="text-2xl font-bold text-[#3E2723] mb-5">Create an Account</Text>
 
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="gray" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                placeholderTextColor="gray"
-              />
+              {[
+                { placeholder: "Username", icon: "person-outline", value: username, setValue: setUsername },
+                { placeholder: "Password", icon: "lock-closed-outline", value: password, setValue: setPassword, secureTextEntry: true },
+                { placeholder: "Email", icon: "mail-outline", value: email, setValue: setEmail, keyboardType: "email-address" as KeyboardTypeOptions },
+                { placeholder: "Address", icon: "home-outline", value: address, setValue: setAddress },
+                { placeholder: "Phone Number", icon: "call-outline", value: phoneNumber, setValue: setphoneNumber, keyboardType: "phone-pad" as KeyboardTypeOptions },
+              ].map((field, index) => (
+                <View key={index} className="flex-row items-center bg-[#D7CCC8] rounded-lg px-3 mb-4 w-full">
+                  <Ionicons name={field.icon as keyof typeof Ionicons.glyphMap} size={20} color="gray" className="mr-2" />
+                  <TextInput
+                    className="flex-1 py-2 text-base"
+                    placeholder={field.placeholder}
+                    value={field.value}
+                    onChangeText={field.setValue}
+                    autoCapitalize="none"
+                    placeholderTextColor="gray"
+                    secureTextEntry={field.secureTextEntry || false}
+                    keyboardType={field.keyboardType || "default"}
+                  />
+                </View>
+              ))}
+
+              <TouchableOpacity className="bg-[#8D6E63] py-3 rounded-lg items-center w-full mt-2" onPress={handleSignUp}>
+                <Text className="text-white text-lg font-bold">Sign Up</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => router.replace("/")}>
+                <Text className="mt-4 text-[#6D4C41] text-sm">
+                  Already have an account? <Text className="font-bold">Sign In</Text>
+                </Text>
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="gray" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholderTextColor="gray"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-circle-outline" size={20} color="gray" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                placeholderTextColor="gray"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="gray" style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholderTextColor="gray"
-              />
-            </View>
-
-            <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-              <Text style={styles.buttonText}>Sign Up</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.replace("/")}>
-              <Text style={styles.signUpText}>
-                Already have an account? <Text style={{ fontWeight: "bold" }}>Sign In</Text>
-              </Text>
-            </TouchableOpacity>
           </View>
-        </LinearGradient>
-      </View>
+        </View>
+      </Animated.View>
     </LinearGradient>
   );
-};
 
-const styles = StyleSheet.create({
-  container: {
-      flex: 1,
-      alignItems: "center",
-      paddingTop: 80, 
-  },
-  headerContainer: {
-      alignItems: "center",
-      marginBottom: 20, 
-  },
-  header: {
-      fontSize: 50,
-      fontFamily: "Boldonse",
-      fontWeight: "bold",
-      color: "white", 
-      textAlign: "center",
-  },
-  logo: {
-      width: 300,
-      height: 300,
-      marginTop: 0, 
-      resizeMode: "contain",
-  },
-  cardContainer: {
-      marginTop: -50, 
-      width: "100%",
-      alignItems: "center",
-  },
-  cardWrapper: {
-      width: "88%",
-      borderRadius: 22,
-      padding: 3, 
-  },
-  card: {
-      width: "100%",
-      padding: 20,
-      backgroundColor: "#EFEBE9",
-      borderRadius: 20,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.2,
-      shadowRadius: 10,
-      elevation: 8,
-  },
-  title: {
-      fontSize: 28,
-      fontWeight: "bold",
-      color: "#3E2723",
-      marginBottom: 20,
-  },
-  inputContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: "#D7CCC8",
-      borderRadius: 10,
-      paddingHorizontal: 10,
-      marginBottom: 15,
-      width: "100%",
-  },
-  icon: {
-      marginRight: 10,
-  },
-  input: {
-      flex: 1,
-      paddingVertical: 10,
-      fontSize: 16,
-  },
-  button: {
-      backgroundColor: "#8D6E63",
-      paddingVertical: 12,
-      borderRadius: 10,
-      alignItems: "center",
-      width: "100%",
-      marginTop: 10,
-  },
-  buttonText: {
-      color: "white",
-      fontSize: 18,
-      fontWeight: "bold",
-  },
-  signUpText: {
-      marginTop: 15,
-      color: "#6D4C41",
-      fontSize: 14,
-  },
-});
+  return Platform.OS === "web" ? SignUpLayout : (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {SignUpLayout}
+    </TouchableWithoutFeedback>
+  );
+};
 
 export default SignUpScreen;

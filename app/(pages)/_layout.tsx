@@ -1,6 +1,5 @@
 import { Stack } from "expo-router";
-import { useContext } from "react";
-import { GlobalContext } from "../../lib/global-provider";
+
 
 const PagesLayout = () => {
         return (
