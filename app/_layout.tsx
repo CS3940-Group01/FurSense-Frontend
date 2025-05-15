@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
 import { GlobalProvider } from "../lib/global-provider";
-import './globals.css'
+import './globals.css';
+import "nativewind"
+
 const AppLayout = () => {
     return (
         <GlobalProvider>

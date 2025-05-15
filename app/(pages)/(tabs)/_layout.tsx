@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faBars, faCircleUser, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faCircleUser, faHome, faRobot,faMapMarkedAlt } from '@fortawesome/free-solid-svg-icons';
 import { View, Text } from 'react-native';
 
 // Define the types for the TabIcon props
@@ -14,9 +14,9 @@ interface TabIconProps {
 // TabIcon component with proper typing
 const TabIcon: React.FC<TabIconProps> = ({ icon, color, focused, name }) => {
   return (
-    <View className="items-center justify-center gap-2 mt-7">
+    <View className="items-center justify-center gap-2 mt-7" style={{ width: 80 }}>
       <FontAwesomeIcon icon={icon} size={20} color={color} />
-      <Text className={`${focused ? 'font-bold text-white' : 'font-bold text-[#6e4c30]'} text-xs`} style={{ color }}>
+      <Text className={`${focused ? 'font-bold text-white' : 'font-bold text-[#6e4c30]'} text-xs`} style={{ color }} >
         {name}
       </Text>
     </View>
@@ -53,25 +53,36 @@ const TabsLayout: React.FC = () => {
         }}
       />
       <Tabs.Screen
-        name="first"
-        options={{
-          headerShown: false,
-          title: 'First',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={faHome} color={color} focused={focused} name="First" />
-          )
-        }}
-      />
+            name="furBot"
+            options={{
+                headerShown: false,
+                title: 'FurBot',
+                tabBarIcon: ({ color, focused }) => (
+                <TabIcon
+                    icon={faRobot}
+                    color={color}
+                    focused={focused}
+                    name="Fur Bot" 
+                />
+                ),
+            }}
+        />
+
       <Tabs.Screen
-        name="second"
-        options={{
-          headerShown: false,
-          title: 'Second',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={faHome} color={color} focused={focused} name="Second" />
-          )
-        }}
-      />
+            name="findVet"
+            options={{
+                headerShown: false,
+                title: 'FindVet',
+                tabBarIcon: ({ color, focused }) => (
+                <TabIcon
+                    icon={faMapMarkedAlt}
+                    color={color}
+                    focused={focused}
+                    name="Find Vet" 
+                />
+                ),
+            }}
+        />
       <Tabs.Screen
         name="third"
         options={{
