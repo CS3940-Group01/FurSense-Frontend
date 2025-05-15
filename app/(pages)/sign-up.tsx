@@ -66,12 +66,13 @@ const SignUpScreen = () => {
     }
 
     axios
-      .post("http://192.168.1.9:8080/auth/register", { username, password,email, address, phoneNumber })
+      .post("http://10.0.2.2:8080/auth/register", { username, password,email, address, phoneNumber })
       .then((response) => {
         if (response.status === 200) {
           axios
-            .post("http://192.168.1.9:8080/auth/login", { username, password })
+            .post("http://10.0.2.2:8080/auth/login", { username, password })
             .then((loginResponse) => {
+              console.log("login response", loginResponse);
               if (loginResponse.status === 200) {
                 if (globalContext) {
                   globalContext.login(username, loginResponse.data);

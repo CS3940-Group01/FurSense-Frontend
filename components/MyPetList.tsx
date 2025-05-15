@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { MyPets } from "@/assets/constants/MyPets";
 import { useRouter } from "expo-router"; // For navigation
+import { useAxiosSecure } from "@/lib/axiosSecure";
 
 interface MedicalHistory {
   date: string;
@@ -32,6 +33,7 @@ interface Pet {
 }
 
 const MyPetList: React.FC = () => {
+   const axiosSecure = useAxiosSecure();
   const [clicked, setClicked] = useState<number | null>(null);
   const [petList, setPetList] = useState<Pet[]>([]);
   const router = useRouter(); // Navigation hook
@@ -39,6 +41,19 @@ const MyPetList: React.FC = () => {
   useEffect(() => {
     setPetList(MyPets);
   }, []);
+
+  useEffect(() => {
+      const getPetList = async () => {
+        try {
+          const response= await axiosSecure.get("/pet/getPetsByOwnerId?ownerId=2");
+          console.log("response in petlist",response.data);
+          
+        } catch (error) {
+          console.error("Error fetching pet list:", error);
+        }
+      }
+      getPetList();
+  },[])
 
   const handleToggle = (id: number) => {
     setClicked(clicked === id ? null : id);
