@@ -1,81 +1,108 @@
 import React from "react";
+import { View, Text, Image, ScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { MyPets } from "@/assets/constants/MyPets";
-import { View, Text, Image, ScrollView } from "react-native";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import {
-  faSyringe,
-  faShower,
-  faPaw,
-  faPhone,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+import { MaterialIcons, FontAwesome5, Entypo } from "@expo/vector-icons";
 
-const PetProfile = () => {
+const PetProfile: React.FC = () => {
   const { id } = useLocalSearchParams();
-  const pet = MyPets.find((p) => p.id === parseInt(id as string));
+  const pet = MyPets.find(p => String(p.id) === id);
 
   if (!pet) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-xl font-bold">Pet not found</Text>
+      <View className="flex-1 justify-center items-center p-6">
+        <Text className="text-lg font-semibold text-gray-600">Pet not found.</Text>
       </View>
     );
   }
 
-  return (
-    <ScrollView className="flex-1 bg-white px-5 pt-10 pb-20">
-      {/* Header Section */}
-      <View className="items-center mb-6">
-        <Image
-          source={pet.image}
-          className="w-36 h-36 rounded-full border-4 border-[#6e4c30]"
-        />
-        <Text className="text-3xl font-bold text-[#6e4c30] mt-4">{pet.name}</Text>
-        <Text className="text-md text-[#af8d66] font-semibold">{pet.breed}</Text>
-      </View>
+  // Helper: Format date nicely
+  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
 
-      {/* Info Section */}
-      <View className="bg-[#af8d66] rounded-xl p-5 shadow-lg">
-        <Text className="text-lg text-white font-bold mb-3">Pet Details</Text>
-        <Text className="text-white font-semibold">Age: {pet.age} years</Text>
-        <Text className="text-white font-semibold">Weight: {pet.weight} kg</Text>
-        <Text className="text-white font-semibold">Height: {pet.height} cm</Text>
-        <View className="mt-3">
-          <Text className="text-white font-semibold">
-            <FontAwesomeIcon icon={faSyringe} color="white" size={14} /> Latest Vaccine:{" "}
-            {pet.latestVaccine}
-          </Text>
-          <Text className="text-white font-semibold mt-1">
-            <FontAwesomeIcon icon={faShower} color="white" size={14} /> Last Bath:{" "}
-            {pet.lastBath}
-          </Text>
-          <Text className="text-white font-semibold mt-1">
-            <FontAwesomeIcon icon={faPaw} color="white" size={14} /> Last Walk:{" "}
-            {pet.lastWalk}
-          </Text>
+  return (
+    <ScrollView className="flex-1 bg-[#f5deda] p-4">
+      {/* Pet Image with Rounded & Shadow */}
+      <View className="w-full h-72 rounded-2xl overflow-hidden shadow-xl mb-6">
+        <Image source={pet.image} resizeMode="cover" className="w-full h-full" />
+        {/* Overlay with pet name & breed */}
+        <View className="absolute bottom-4 left-4 bg-black bg-opacity-50 rounded-3xl px-5 py-2">
+          <Text className="text-3xl font-extrabold text-white">{pet.name}</Text>
+          <Text className="text-sm text-gray-300">{pet.breed}</Text>
         </View>
       </View>
 
-      {/* Medical History */}
-      <View className="bg-[#6e4c30] rounded-xl mt-6 p-5 shadow-lg">
-        <Text className="text-lg text-white font-bold mb-3">Medical History</Text>
-        {pet.medicalHistory.map((record, index) => (
-          <Text key={index} className="text-white mb-1">
-            • {record.date}: {record.description}
-          </Text>
-        ))}
+      {/* Quick Stats: Age, Weight, Height with icons */}
+      <View className="flex-row justify-around bg-gray-100 rounded-2xl p-5 shadow-md mb-8">
+        <View className="items-center">
+          <FontAwesome5 name="birthday-cake" size={28} color="#4f46e5" />
+          <Text className="mt-2 font-semibold text-gray-800">{pet.age} years</Text>
+          <Text className="text-sm text-gray-500">Age</Text>
+        </View>
+        <View className="items-center">
+          <MaterialIcons name="fitness-center" size={28} color="#16a34a" />
+          <Text className="mt-2 font-semibold text-gray-800">{pet.weight} kg</Text>
+          <Text className="text-sm text-gray-500">Weight</Text>
+        </View>
+        <View className="items-center">
+          <Entypo name="ruler" size={28} color="#ef4444" />
+          <Text className="mt-2 font-semibold text-gray-800">{pet.height} cm</Text>
+          <Text className="text-sm text-gray-500">Height</Text>
+        </View>
       </View>
 
-      {/* Owner Info */}
-      <View className="bg-[#af8d66] rounded-xl mt-6 p-5 shadow-lg mb-10">
-        <Text className="text-lg text-white font-bold mb-3">Owner Info</Text>
-        <Text className="text-white font-semibold">
-          <FontAwesomeIcon icon={faUser} color="white" size={14} /> {pet.owner.name}
+      {/* Medical History with icons */}
+      <View className="mb-8">
+        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
+          🩺 Medical History
         </Text>
-        <Text className="text-white font-semibold mt-1">
-          <FontAwesomeIcon icon={faPhone} color="white" size={14} /> {pet.owner.contact}
+        {pet.medicalHistory.length === 0 ? (
+          <Text className="text-gray-500 italic">No medical history available.</Text>
+        ) : (
+          pet.medicalHistory.map(({ date, description }, idx) => (
+            <View
+              key={idx}
+              className="flex-row justify-between items-center mb-3 rounded-xl bg-indigo-50 p-3 shadow-sm"
+            >
+              <MaterialIcons name="medical-services" size={24} color="#6366f1" />
+              <Text className="flex-1 px-4 text-gray-800 font-medium">{description}</Text>
+              <Text className="text-gray-500 text-sm">{formatDate(date)}</Text>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* Upcoming Vaccines as colorful pills */}
+      <View className="mb-8">
+        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
+          💉 Upcoming Vaccines
         </Text>
+        {pet.upcomingVaccines?.length === 0 ? (
+          <Text className="text-gray-500 italic">No upcoming vaccines scheduled.</Text>
+        ) : (
+          <View className="flex-row flex-wrap gap-3">
+            {pet.upcomingVaccines.map(({ description, date }, idx) => (
+              <View
+                key={idx}
+                className="bg-green-100 px-4 py-2 rounded-full shadow-md flex-row items-center"
+              >
+                <FontAwesome5 name="syringe" size={18} color="#16a34a" />
+                <Text className="ml-2 font-semibold text-green-700">{description}</Text>
+                <Text className="ml-2 text-gray-600 text-xs">{formatDate(date)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Owner Info with subtle styling */}
+      <View className="bg-gray-50 rounded-2xl p-5 shadow-inner border border-gray-200">
+        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
+          👤 Owner Information
+        </Text>
+        <Text className="text-lg font-semibold text-gray-800">
+          {pet.owner.name}
+        </Text>
+        <Text className="text-gray-600 mt-1">{pet.owner.contact}</Text>
       </View>
     </ScrollView>
   );
