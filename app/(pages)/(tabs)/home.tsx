@@ -4,8 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars, faCircleUser } from '@fortawesome/free-solid-svg-icons';
 import MissingPets from "@/components/MissingPets";
 import MyPetList from "@/components/MyPetList";
+import { GlobalContext } from "@/lib/global-provider";
+import { useContext } from "react";
 
 export default function Home() {
+
+  const globalContext = useContext(GlobalContext);
+  console.log("GlobalContext in home:", globalContext);
   return (
     <SafeAreaView className="h-full w-full bg-[#f5deda] relative">
       {/* Scrollable Content */}
@@ -15,7 +20,7 @@ export default function Home() {
           <Image source={logo} className="w-12 h-12 rounded-full" />
 
           {/* Title */}
-          <Text className="text-2xl font-bold text-[#af8d66]">Welcome User</Text>
+          <Text className="text-2xl font-bold text-[#af8d66]">Welcome {globalContext?.username ? globalContext.username: "User"}!</Text>
 
           {/* Icons */}
           <View className="flex-row items-center gap-3">

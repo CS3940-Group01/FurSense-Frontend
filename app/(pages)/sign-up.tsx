@@ -33,7 +33,7 @@ const SignUpScreen = () => {
     const keyboardShowListener = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardVisible(true);
       Animated.timing(translateY, {
-        toValue: -220,
+        toValue: -300,
         duration: 300,
         useNativeDriver: true,
       }).start();
@@ -94,15 +94,19 @@ const SignUpScreen = () => {
           transform: [{ translateY }],
           flex: 1,
           alignItems: "center",
-          paddingTop: 20,
         }}
       >
-        <View className="items-center mt-10 mb-4">
-          <Text className="text-[72px] font-bold text-white font-mono">FurSense</Text>
+        <View className="items-center mb-4">
+          <View className="items-center">
+            <Image
+              source={require("../../assets/images/sign-in-logo.png")}
+              style={{ width: 300, height: 300 }}
+              resizeMode="contain"
+            />
+          </View>
           <Image
             source={require("../../assets/images/sign-up.png")}
-            className="mt-10"
-            style={{ width: 200, height: 200 }}
+            style={{ width: 200, height: 200, marginTop: -40  }}
             resizeMode="contain"
           />
         </View>

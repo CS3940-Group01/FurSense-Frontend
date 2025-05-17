@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faBars, faCircleUser, faHome, faRobot,faMapMarkedAlt } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faCircleUser, faHome, faRobot,faMapMarkedAlt, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { View, Text } from 'react-native';
 
 // Define the types for the TabIcon props
@@ -84,15 +84,20 @@ const TabsLayout: React.FC = () => {
             }}
         />
       <Tabs.Screen
-        name="third"
-        options={{
-          headerShown: false,
-          title: 'Third',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={faHome} color={color} focused={focused} name="Third" />
-          )
-        }}
-      />
+            name="tips"
+            options={{
+                headerShown: false,
+                title: 'Tips',
+                tabBarIcon: ({ color, focused }) => (
+                <TabIcon
+                    icon={faLightbulb}
+                    color={color}
+                    focused={focused}
+                    name="Tips" 
+                />
+                ),
+            }}
+        />
     </Tabs>
   );
 };

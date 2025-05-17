@@ -35,7 +35,7 @@ export default function SignInScreen() {
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardVisible(true);
       Animated.timing(translateY, {
-        toValue: -230,
+        toValue: -280,
         duration: 300,
         useNativeDriver: true,
       }).start();
@@ -85,16 +85,19 @@ export default function SignInScreen() {
           transform: [{ translateY }],
           flex: 1,
           alignItems: "center",
-          paddingTop: 20,
+          paddingTop: 10,
         }}
       >
         <View className="items-center">
-          <Text className="text-[72px] font-bold text-white mt-20 mb-20 ">
-            FurSense
-          </Text>
+           <View className="items-center">
+            <Image
+              source={require("../assets/images/sign-in-logo.png")}
+              style={{ width: 300, height: 300, marginTop: 10, marginBottom: 10 }}
+              resizeMode="contain"
+            />
+            </View>
           <Image
             source={require("../assets/images/sign-in.png")}
-            className="mt-10"
             style={{ width: 200, height: 200 }}
             resizeMode="contain"
           />
