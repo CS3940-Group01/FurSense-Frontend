@@ -1,101 +1,161 @@
-import React, { useEffect, useState } from 'react';
-import { Image, Text, View, TouchableOpacity } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'; // Import FontAwesome
-import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons'; // Import icons
-import { MyPets } from '@/assets/constants/MyPets'; // Pet data import
-
-// Define types for Pet and MedicalHistory
-interface MedicalHistory {
-  date: string;
-  description: string;
-}
+import React, { useEffect, useState } from "react";
+import { ImageBackground, Text, View, TouchableOpacity, ScrollView, Dimensions, Animated } from "react-native";
+import { MyPets } from "@/assets/constants/MyPets";
+import { useRouter } from "expo-router";
+import { useAxiosSecure } from "@/lib/axiosSecure";
 
 interface Pet {
   id: number;
   name: string;
-  age: number;
-  weight: number;
-  height: number;
-  image: any; // Assuming image is a local source (e.g., require or imported image)
-  latestVaccine: string;
-  lastBath: string;
-  lastWalk: string;
-  breed: string;
-  medicalHistory: MedicalHistory[];
-  owner: {
-    name: string;
-    contact: string;
-  };
+  image: any;
+  breed?: string;
 }
 
+const screenHeight = Dimensions.get("window").height;
+
 const MyPetList: React.FC = () => {
-  const [clicked, setClicked] = useState<number | null>(null); // Handle individual toggle state for each pet
-  const [petList, setPetList] = useState<Pet[]>([]); // Define the type of petList as an array of Pet
+  const axiosSecure = useAxiosSecure();
+  const [petList, setPetList] = useState<Pet[]>([]);
+  const router = useRouter();
+
+  // Animated values store per pet id
+  const [animations] = useState<{ [key: number]: Animated.Value }>({});
 
   useEffect(() => {
-    setPetList(MyPets); // Setting pet data to the state
-    console.log("Pet List:", petList);
-    
+    setPetList(MyPets);
+    // Initialize animated values for scale
+    MyPets.forEach(pet => {
+      animations[pet.id] = new Animated.Value(1);
+    });
   }, []);
 
-  const handleToggle = (id: number) => {
-    setClicked(clicked === id ? null : id); // Toggle the clicked pet's vaccines section
+  useEffect(() => {
+    const getPetList = async () => {
+      try {
+        const response = await axiosSecure.get("/pet/getPetsByOwnerId?ownerId=2");
+        console.log("response in petlist", response.data);
+      } catch (error) {
+        console.error("Error fetching pet list:", error);
+      }
+    };
+    getPetList();
+  }, []);
+
+  const handlePressIn = (id: number) => {
+    Animated.spring(animations[id], {
+      toValue: 0.97,
+      useNativeDriver: true,
+      friction: 3,
+      tension: 100,
+    }).start();
+  };
+
+  const handlePressOut = (id: number) => {
+    Animated.spring(animations[id], {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 3,
+      tension: 40,
+    }).start();
+  };
+
+  const handleNavigate = (id: number) => {
+    router.push({ pathname: "/pet/[id]", params: { id: String(id) } });
   };
 
   return (
-    <View className="mt-5 h-full gap-4">
-      {petList.map((pet) => (
-        
-        
-        <View key={pet.id} className="bg-[#af8d66] w-[90%] self-center rounded-xl p-4 shadow-lg">
-          <View className="flex-row items-center">
-            <Image
-              source={pet.image}
-              className="w-20 h-20 rounded-full border-2 border-white"
-            />
-            <View className="ml-4">
-              <Text className="text-[#6e4c30]  text-[20px] font-bold text-center">{pet.name}</Text>
-              <Text className="text-white text-md font-semibold">Age: {pet.age} years</Text>
-
-              <View className="flex flex-row justify-between mt-2 gap-5">
-                <View>
-                  <Text className="text-white text-md font-bold">Weight: {pet.weight} kg</Text>
-                  <Text className="text-white text-sm">4 months ago</Text>
+    <ScrollView className="mt-4">
+      <View className="flex flex-col gap-6 px-5 pb-8">
+        {petList.map((pet) => (
+          <Animated.View
+            key={pet.id}
+            style={{
+              transform: [{ scale: animations[pet.id] || 1 }],
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.15,
+              shadowRadius: 10,
+              elevation: 8,
+              borderRadius: 20,
+              overflow: "hidden",
+              height: screenHeight / 3,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPressIn={() => handlePressIn(pet.id)}
+              onPressOut={() => handlePressOut(pet.id)}
+              onPress={() => handleNavigate(pet.id)}
+              className="flex-1"
+            >
+              <ImageBackground
+                source={pet.image}
+                resizeMode="cover"
+                className="flex-1"
+                imageStyle={{ borderRadius: 20 }}
+              >
+                {/* Dark gradient overlay */}
+                <View
+                  style={{
+                    flex: 1,
+                    borderRadius: 20,
+                    backgroundColor: "rgba(0,0,0,0.3)",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingHorizontal: 24,
+                  }}
+                >
+                  {/* Frosted glass overlay */}
+                  <View
+                    style={{
+                      backgroundColor: "rgba(255, 255, 255, 0.15)",
+                      borderRadius: 16,
+                      paddingVertical: 18,
+                      paddingHorizontal: 28,
+                      borderColor: "rgba(255, 255, 255, 0.3)",
+                      borderWidth: 1,
+                      shadowColor: "#fff",
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.8,
+                      shadowRadius: 8,
+                    }}
+                  >
+                    <Text
+                      className="text-white text-4xl font-semibold tracking-wider text-center"
+                      style={{ textShadowColor: "rgba(0,0,0,0.7)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}
+                    >
+                      {pet.name}
+                    </Text>
+                  </View>
                 </View>
-                <View>
-                  <Text className="text-white text-md font-bold">Height: {pet.height} cm</Text>
-                  <Text className="text-white text-sm">4 months ago</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Vaccines Tile */}
-          <TouchableOpacity onPress={() => handleToggle(pet.id)} className="mt-4">
-            <View className="bg-[#6e4c30] p-3 rounded-lg">
-              <View className="flex flex-row justify-between">
-                <Text className="text-white text-lg font-bold">Vaccines</Text>
-                <FontAwesomeIcon
-                  icon={clicked === pet.id ? faChevronDown : faChevronRight}
-                  size={20}
-                  color="white"
-                />
-              </View>
-
-              {clicked === pet.id && (
-                <View>
-                  {pet.medicalHistory.map((item, index) => (
-                    <View key={index} className="mb-2 pl-4">
-                      <Text className="text-white text-sm">{item.date}: {item.description}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-      ))}
-    </View>
+                {/* Breed badge in top right */}
+                {pet.breed && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 16,
+                      right: 16,
+                      backgroundColor: "rgba(255,255,255,0.8)",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                    }}
+                  >
+                    <Text style={{ color: "#444", fontWeight: "600", fontSize: 14 }}>
+                      {pet.breed}
+                    </Text>
+                  </View>
+                )}
+              </ImageBackground>
+            </TouchableOpacity>
+          </Animated.View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
