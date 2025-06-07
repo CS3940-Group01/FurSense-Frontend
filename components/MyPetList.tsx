@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { ImageBackground, Text, View, TouchableOpacity, ScrollView, Dimensions, Animated } from "react-native";
-import { MyPets } from "@/assets/constants/MyPets";
+import { ImageBackground, Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { useAxiosSecure } from "@/lib/axiosSecure";
 
 interface Pet {
   id: number;
   name: string;
-  image: any;
-  breed?: string;
+  image: string;
+  age: number;
+  type: string;
+  birthDate: Date;
 }
 
 const screenHeight = Dimensions.get("window").height;
@@ -18,46 +19,18 @@ const MyPetList: React.FC = () => {
   const [petList, setPetList] = useState<Pet[]>([]);
   const router = useRouter();
 
-  // Animated values store per pet id
-  const [animations] = useState<{ [key: number]: Animated.Value }>({});
-
-  useEffect(() => {
-    setPetList(MyPets);
-    // Initialize animated values for scale
-    MyPets.forEach(pet => {
-      animations[pet.id] = new Animated.Value(1);
-    });
-  }, []);
-
   useEffect(() => {
     const getPetList = async () => {
       try {
-        const response = await axiosSecure.get("/pet/getPetsByOwnerId?ownerId=2");
+        const response = await axiosSecure.get("/pet/getPetsByOwnerId?ownerId=8");
         console.log("response in petlist", response.data);
+        setPetList(response.data);
       } catch (error) {
         console.error("Error fetching pet list:", error);
       }
     };
     getPetList();
   }, []);
-
-  const handlePressIn = (id: number) => {
-    Animated.spring(animations[id], {
-      toValue: 0.97,
-      useNativeDriver: true,
-      friction: 3,
-      tension: 100,
-    }).start();
-  };
-
-  const handlePressOut = (id: number) => {
-    Animated.spring(animations[id], {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 3,
-      tension: 40,
-    }).start();
-  };
 
   const handleNavigate = (id: number) => {
     router.push({ pathname: "/pet/[id]", params: { id: String(id) } });
@@ -67,10 +40,9 @@ const MyPetList: React.FC = () => {
     <ScrollView className="mt-4">
       <View className="flex flex-col gap-6 px-5 pb-8">
         {petList.map((pet) => (
-          <Animated.View
+          <View
             key={pet.id}
             style={{
-              transform: [{ scale: animations[pet.id] || 1 }],
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 6 },
               shadowOpacity: 0.15,
@@ -83,18 +55,15 @@ const MyPetList: React.FC = () => {
           >
             <TouchableOpacity
               activeOpacity={0.9}
-              onPressIn={() => handlePressIn(pet.id)}
-              onPressOut={() => handlePressOut(pet.id)}
               onPress={() => handleNavigate(pet.id)}
               className="flex-1"
             >
               <ImageBackground
-                source={pet.image}
+                source={{ uri: pet.image }}
                 resizeMode="cover"
                 className="flex-1"
                 imageStyle={{ borderRadius: 20 }}
               >
-                {/* Dark gradient overlay */}
                 <View
                   style={{
                     flex: 1,
@@ -105,7 +74,6 @@ const MyPetList: React.FC = () => {
                     paddingHorizontal: 24,
                   }}
                 >
-                  {/* Frosted glass overlay */}
                   <View
                     style={{
                       backgroundColor: "rgba(255, 255, 255, 0.15)",
@@ -122,14 +90,18 @@ const MyPetList: React.FC = () => {
                   >
                     <Text
                       className="text-white text-4xl font-semibold tracking-wider text-center"
-                      style={{ textShadowColor: "rgba(0,0,0,0.7)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}
+                      style={{
+                        textShadowColor: "rgba(0,0,0,0.7)",
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 4,
+                      }}
                     >
                       {pet.name}
                     </Text>
                   </View>
                 </View>
-                {/* Breed badge in top right */}
-                {pet.breed && (
+
+                {pet.type && (
                   <View
                     style={{
                       position: "absolute",
@@ -146,13 +118,13 @@ const MyPetList: React.FC = () => {
                     }}
                   >
                     <Text style={{ color: "#444", fontWeight: "600", fontSize: 14 }}>
-                      {pet.breed}
+                      {pet.type}
                     </Text>
                   </View>
                 )}
               </ImageBackground>
             </TouchableOpacity>
-          </Animated.View>
+          </View>
         ))}
       </View>
     </ScrollView>
