@@ -32,9 +32,14 @@ const MyPetList: React.FC = () => {
     getPetList();
   }, []);
 
-  const handleNavigate = (id: number) => {
-    router.push({ pathname: "/pet/[id]", params: { id: String(id) } });
-  };
+const handleNavigate = (pet: Pet) => {
+  const petParam = encodeURIComponent(JSON.stringify(pet));
+  router.push({
+    pathname: "/pet/[id]",
+    params: { id: String(pet.id), pet: petParam },
+  });
+};
+
 
   return (
     <ScrollView className="mt-4">
@@ -55,7 +60,7 @@ const MyPetList: React.FC = () => {
           >
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => handleNavigate(pet.id)}
+              onPress={() => handleNavigate(pet)}
               className="flex-1"
             >
               <ImageBackground

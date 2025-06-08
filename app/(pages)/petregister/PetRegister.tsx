@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,17 @@ import { useAxiosSecure } from "@/lib/axiosSecure";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
 
+interface Vaccine {
+  id: string;
+  name: string;
+  // add other fields as needed
+}
+
+interface VaccineWithDates extends Vaccine {
+  lastGivenDate: Date | null;
+  nextDueDate: Date | null;
+}
+
 const PetRegister: React.FC = () => {
   const [petName, setPetName] = useState("");
   const [petType, setPetType] = useState("Dog");
@@ -23,11 +34,41 @@ const PetRegister: React.FC = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [birthDate, setBirthDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePickerIndex, setShowDatePickerIndex] = useState<number | null>(null);
+
+  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
+  const [vaccinesWithDates, setVaccinesWithDates] = useState<VaccineWithDates[]>([]);
+
   const axiosSecure = useAxiosSecure();
+
+  // Sync vaccinesWithDates whenever vaccines change
+  useEffect(() => {
+    const initVaccinesWithDates = vaccines.map((v) => ({
+      ...v,
+      lastGivenDate: null,
+      nextDueDate: null,
+    }));
+    setVaccinesWithDates(initVaccinesWithDates);
+  }, [vaccines]);
+
+  useEffect(() => {
+    const fetchVaccines = async () => {
+      try {
+        const response = await axiosSecure.get(`/vaccine/getVaccinesBySpecies`, {
+          params: { species: petType },
+        });
+        setVaccines(response.data);
+      } catch (error) {
+        console.error("Error fetching vaccines:", error);
+      }
+    };
+
+    fetchVaccines();
+  }, [petType]);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -73,12 +114,20 @@ const PetRegister: React.FC = () => {
     new Date().getFullYear() - birthDate.getFullYear();
 
   const handleSubmit = async () => {
-    if (!petName.trim()) return Alert.alert("Validation", "Please enter your pet's name.");
-    if (!imageUri) return Alert.alert("Validation", "Please pick an image.");
-    const imageUrl = await uploadToCloudinary(imageUri);
-    if (!imageUrl) return Alert.alert("Error", "Image upload failed.");
+    if (!petName.trim()) {
+      return Alert.alert("Validation", "Please enter your pet's name.");
+    }
+    if (!imageUri) {
+      return Alert.alert("Validation", "Please pick an image.");
+    }
 
-    const payload = {
+    const imageUrl = await uploadToCloudinary(imageUri);
+    if (!imageUrl) {
+      return Alert.alert("Error", "Image upload failed.");
+    }
+
+    // Prepare pet payload
+    const petPayload = {
       name: petName,
       type: petType,
       age: calculateAge(birthDate),
@@ -88,15 +137,49 @@ const PetRegister: React.FC = () => {
     };
 
     try {
-      await axiosSecure.post("/pet/addPet", payload);
-      Alert.alert("Success", "Pet registered successfully!");
+      // 1. Add pet and get petId from response
+      const petResponse = await axiosSecure.post("/pet/addPet", petPayload);
+      const petId = petResponse.data.id; // Adjust if backend returns differently
+
+      // 2. Prepare vaccine schedule payload
+      const today = new Date();
+      const petVaccineSchedulePayload = vaccinesWithDates.map((v) => {
+        let nextDueDate: Date;
+
+        if (v.lastGivenDate) {
+          nextDueDate = new Date(v.lastGivenDate);
+          nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+        } else {
+          nextDueDate = new Date(today);
+          nextDueDate.setDate(today.getDate() + 14); // +2 weeks from today
+        }
+
+        return {
+          petId: petId,
+          vaccineId: v.id,
+          nextDueDate: nextDueDate.toISOString().split("T")[0], // "YYYY-MM-DD"
+        };
+      });
+
+      // 3. Add vaccine schedules
+
+      console.log("petVaccineSchedulePayload", petVaccineSchedulePayload);
+      
+      await axiosSecure.post("/vaccine/addSchedules", petVaccineSchedulePayload);
+
+      Alert.alert("Success", "Pet and vaccine schedules registered successfully!");
+
+      // Reset form
       setPetName("");
       setPetType("Dog");
       setBirthDate(new Date());
       setImageUri(null);
+      setVaccinesWithDates((prev) =>
+        prev.map((v) => ({ ...v, lastGivenDate: null, nextDueDate: null }))
+      );
     } catch (error) {
       console.error("Submit error:", error);
-      Alert.alert("Error", "Failed to submit pet data.");
+      Alert.alert("Error", "Failed to submit pet data or vaccine schedule.");
     }
   };
 
@@ -228,17 +311,68 @@ const PetRegister: React.FC = () => {
           </TouchableOpacity>
         )}
 
+        {vaccinesWithDates.map((vaccine, index) => (
+          <View key={vaccine.id} style={{ marginBottom: 16 }}>
+            <Text style={{ fontWeight: "600", marginBottom: 6 }}>{vaccine.name}</Text>
+
+            <TouchableOpacity
+              onPress={() => setShowDatePickerIndex(index)}
+              style={{ padding: 10, backgroundColor: "#6366f1", borderRadius: 8 }}
+            >
+              <Text style={{ color: "#fff" }}>
+                {vaccine.lastGivenDate
+                  ? `Last Given: ${vaccine.lastGivenDate.toDateString()}`
+                  : "Pick Last Given Date"}
+              </Text>
+            </TouchableOpacity>
+
+            <Text style={{ marginTop: 6 }}>
+              Next Due:{" "}
+              {vaccine.nextDueDate
+                ? vaccine.nextDueDate.toDateString()
+                : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toDateString()}
+            </Text>
+
+            {showDatePickerIndex === index && (
+              <DateTimePicker
+                value={vaccine.lastGivenDate || new Date()}
+                mode="date"
+                display="default"
+                maximumDate={new Date()}
+                onChange={(event, selectedDate) => {
+                  if (Platform.OS === "android") setShowDatePickerIndex(null);
+                  if (!selectedDate) return;
+
+                  const updatedVaccines = [...vaccinesWithDates];
+                  updatedVaccines[index].lastGivenDate = selectedDate;
+
+                  // Automatically calculate nextDueDate +1 year from lastGivenDate
+                  const nextDue = new Date(selectedDate);
+                  nextDue.setFullYear(nextDue.getFullYear() + 1);
+                  updatedVaccines[index].nextDueDate = nextDue;
+
+                  setVaccinesWithDates(updatedVaccines);
+                }}
+                accentColor="#af8d66"
+                themeVariant="light"
+              />
+            )}
+          </View>
+        ))}
+
         <TouchableOpacity
           onPress={handleSubmit}
           style={{
-            backgroundColor: "#16a34a",
-            padding: 14,
-            borderRadius: 10,
-            marginTop: 8,
+            backgroundColor: "#af8d66",
+            padding: 16,
+            borderRadius: 12,
+            alignItems: "center",
+            marginTop: 16,
           }}
+          disabled={imageUploading}
         >
-          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16, textAlign: "center" }}>
-            Submit Pet
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+            {imageUploading ? "Uploading Image..." : "Register Pet"}
           </Text>
         </TouchableOpacity>
       </View>
