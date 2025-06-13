@@ -1,110 +1,199 @@
-import React from "react";
-import { View, Text, Image, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  Pressable,
+  Alert,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { MyPets } from "@/assets/constants/MyPets";
-import { MaterialIcons, FontAwesome5, Entypo } from "@expo/vector-icons";
+import { useAxiosSecure } from "@/lib/axiosSecure";
 
 const PetProfile: React.FC = () => {
-  const { id } = useLocalSearchParams();
-  const pet = MyPets.find(p => String(p.id) === id);
+  const axiosSecure = useAxiosSecure();
+  const { pet } = useLocalSearchParams();
 
-  if (!pet) {
+  const [petData, setPetData] = useState<any>(null);
+  const [vaccineSchedule, setVaccineSchedule] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Modal states
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedVaccine, setSelectedVaccine] = useState<any>(null);
+  const [vetNameInput, setVetNameInput] = useState("");
+
+  useEffect(() => {
+    try {
+      const parsed = pet ? JSON.parse(decodeURIComponent(pet as string)) : null;
+      setPetData(parsed);
+    } catch (err) {
+      console.error("Invalid pet param", err);
+      setError("Invalid pet data.");
+      setLoading(false);
+    }
+  }, [pet]);
+
+  const fetchVaccineSchedule = async () => {
+    if (!petData?.id) return;
+    setLoading(true);
+    try {
+      const response = await axiosSecure.get(`/vaccine/schedule/${petData.id}`);
+      setVaccineSchedule(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch vaccine schedule", err);
+      setError("Failed to load vaccine schedule.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVaccineSchedule();
+  }, [petData]);
+
+  const openModal = (vaccine: any) => {
+    setSelectedVaccine(vaccine);
+    setVetNameInput("");
+    setModalVisible(true);
+  };
+
+  const submitVaccineLog = async () => {
+    if (!vetNameInput.trim()) {
+      Alert.alert("Validation", "Please enter the veterinarian's name.");
+      return;
+    }
+
+    try {
+      await axiosSecure.post("/vaccine/updateVaccineLog", {
+        petId: petData.id,
+        vaccineId: selectedVaccine.vaccineId,
+        vetName: vetNameInput,
+        administeredOn: new Date().toISOString(),
+      });
+
+      Alert.alert("Success", "Vaccine log added successfully!");
+      setModalVisible(false);
+      fetchVaccineSchedule(); // Refresh the schedule after logging vaccine
+    } catch (err) {
+      console.error("Failed to add vaccine log", err);
+      Alert.alert("Error", "Failed to log vaccine. Please try again.");
+    }
+  };
+
+  if (loading) {
     return (
-      <View className="flex-1 justify-center items-center p-6">
-        <Text className="text-lg font-semibold text-gray-600">Pet not found.</Text>
+      <View className="flex-1 justify-center items-center bg-[#f5deda]">
+        <ActivityIndicator size="large" />
+        <Text className="mt-4 text-base text-gray-700">Loading...</Text>
       </View>
     );
   }
 
-  // Helper: Format date nicely
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString();
+  if (error || !petData) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#f5deda]">
+        <Text className="text-red-500 text-lg">{error || "Invalid or missing pet data."}</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView className="flex-1 bg-[#f5deda] p-4">
-      {/* Pet Image with Rounded & Shadow */}
-      <View className="w-full h-72 rounded-2xl overflow-hidden shadow-xl mb-6">
-        <Image source={pet.image} resizeMode="cover" className="w-full h-full" />
-        {/* Overlay with pet name & breed */}
-        <View className="absolute bottom-4 left-4 bg-black bg-opacity-50 rounded-3xl px-5 py-2">
-          <Text className="text-3xl font-extrabold text-white">{pet.name}</Text>
-          <Text className="text-sm text-gray-300">{pet.breed}</Text>
-        </View>
-      </View>
+    <>
+      <ScrollView className="flex-1 bg-[#f5deda]">
+        <View className="items-center p-6">
+          <Image
+            source={{ uri: petData.image }}
+            className="w-48 h-48 rounded-full border-4 border-[#af8d66] mb-4"
+          />
+          <Text className="text-3xl font-bold text-[#4f46e5]">{petData.name}</Text>
+          <Text className="text-lg text-gray-700 mt-1">Species: {petData.type}</Text>
+          <Text className="text-lg text-gray-700">Age: {petData.age} years</Text>
+          <Text className="text-lg text-gray-700">
+            Birth Date: {new Date(petData.birthDate).toLocaleDateString()}
+          </Text>
 
-      {/* Quick Stats: Age, Weight, Height with icons */}
-      <View className="flex-row justify-around bg-gray-100 rounded-2xl p-5 shadow-md mb-8">
-        <View className="items-center">
-          <FontAwesome5 name="birthday-cake" size={28} color="#4f46e5" />
-          <Text className="mt-2 font-semibold text-gray-800">{pet.age} years</Text>
-          <Text className="text-sm text-gray-500">Age</Text>
-        </View>
-        <View className="items-center">
-          <MaterialIcons name="fitness-center" size={28} color="#16a34a" />
-          <Text className="mt-2 font-semibold text-gray-800">{pet.weight} kg</Text>
-          <Text className="text-sm text-gray-500">Weight</Text>
-        </View>
-        <View className="items-center">
-          <Entypo name="ruler" size={28} color="#ef4444" />
-          <Text className="mt-2 font-semibold text-gray-800">{pet.height} cm</Text>
-          <Text className="text-sm text-gray-500">Height</Text>
-        </View>
-      </View>
+          <Text className="text-2xl font-semibold text-[#16a34a] mt-8 mb-4">Vaccine Schedule</Text>
 
-      {/* Medical History with icons */}
-      <View className="mb-8">
-        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
-          🩺 Medical History
-        </Text>
-        {pet.medicalHistory.length === 0 ? (
-          <Text className="text-gray-500 italic">No medical history available.</Text>
-        ) : (
-          pet.medicalHistory.map(({ date, description }, idx) => (
-            <View
-              key={idx}
-              className="flex-row justify-between items-center mb-3 rounded-xl bg-indigo-50 p-3 shadow-sm"
-            >
-              <MaterialIcons name="medical-services" size={24} color="#6366f1" />
-              <Text className="flex-1 px-4 text-gray-800 font-medium">{description}</Text>
-              <Text className="text-gray-500 text-sm">{formatDate(date)}</Text>
-            </View>
-          ))
-        )}
-      </View>
-
-      {/* Upcoming Vaccines as colorful pills */}
-      <View className="mb-8">
-        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
-          💉 Upcoming Vaccines
-        </Text>
-        {pet.upcomingVaccines?.length === 0 ? (
-          <Text className="text-gray-500 italic">No upcoming vaccines scheduled.</Text>
-        ) : (
-          <View className="flex-row flex-wrap gap-3">
-            {pet.upcomingVaccines.map(({ description, date }, idx) => (
-              <View
-                key={idx}
-                className="bg-green-100 px-4 py-2 rounded-full shadow-md flex-row items-center"
+          {vaccineSchedule.length === 0 ? (
+            <Text className="text-base text-gray-500">No vaccine schedule found.</Text>
+          ) : (
+            vaccineSchedule.map((vaccine, index) => (
+              <TouchableOpacity
+                key={index}
+                className="w-full bg-white p-4 rounded-2xl shadow mb-4"
+                onPress={() => openModal(vaccine)}
               >
-                <FontAwesome5 name="syringe" size={18} color="#16a34a" />
-                <Text className="ml-2 font-semibold text-green-700">{description}</Text>
-                <Text className="ml-2 text-gray-600 text-xs">{formatDate(date)}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
+                <Text className="text-lg font-bold text-[#6366f1]">{vaccine.vaccineId}</Text>
+                <Text className="text-sm text-gray-700 mt-1">
+                  {(() => {
+                    const dueDate = new Date(vaccine.nextDueDate);
+                    const today = new Date();
+                    const diffInMs = dueDate.getTime() - today.getTime();
+                    const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+                    const formatted = dueDate.toLocaleDateString();
 
-      {/* Owner Info with subtle styling */}
-      <View className="bg-gray-50 rounded-2xl p-5 shadow-inner border border-gray-200">
-        <Text className="text-2xl font-bold mb-4 border-b border-gray-300 pb-2 text-gray-700">
-          👤 Owner Information
-        </Text>
-        <Text className="text-lg font-semibold text-gray-800">
-          {pet.owner.name}
-        </Text>
-        <Text className="text-gray-600 mt-1">{pet.owner.contact}</Text>
-      </View>
-    </ScrollView>
+                    if (diffInDays > 7) {
+                      const weeks = Math.floor(diffInDays / 7);
+                      return `Due on ${formatted} (${weeks} week${weeks > 1 ? "s" : ""} left)`;
+                    } else if (diffInDays >= 0) {
+                      return `Due on ${formatted} (${diffInDays} day${diffInDays > 1 ? "s" : ""} left)`;
+                    } else {
+                      return `Was due on ${formatted} (overdue by ${Math.abs(diffInDays)} day${Math.abs(diffInDays) > 1 ? "s" : ""})`;
+                    }
+                  })()}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Modal for vetName input and confirm */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="bg-white rounded-2xl p-6 w-80">
+            <Text className="text-xl font-semibold mb-4">Record Vaccine Injection</Text>
+            <Text className="mb-2">Vaccine: {selectedVaccine?.vaccineId}</Text>
+
+            <TextInput
+              placeholder="Enter veterinarian's name"
+              value={vetNameInput}
+              onChangeText={setVetNameInput}
+              className="border border-gray-300 rounded-md px-4 py-2 mb-4"
+              autoFocus
+            />
+
+            <View className="flex-row justify-between">
+              <Pressable
+                className="bg-gray-300 px-4 py-2 rounded-md"
+                onPress={() => setModalVisible(false)}
+              >
+                <Text>Cancel</Text>
+              </Pressable>
+
+              <Pressable
+                className="bg-[#16a34a] px-4 py-2 rounded-md"
+                onPress={submitVaccineLog}
+              >
+                <Text className="text-white font-semibold">Confirm Injection</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 

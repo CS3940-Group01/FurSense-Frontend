@@ -1,4 +1,4 @@
-import { Image, SafeAreaView, Text, View, ScrollView } from "react-native";
+import { Image, SafeAreaView, Text, View, ScrollView ,TouchableOpacity} from "react-native";
 import logo from "../../../assets/images/logo.webp";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBars, faCircleUser } from '@fortawesome/free-solid-svg-icons';
@@ -6,6 +6,7 @@ import MissingPets from "@/components/MissingPets";
 import MyPetList from "@/components/MyPetList";
 import { GlobalContext } from "@/lib/global-provider";
 import { useContext } from "react";
+import { router } from "expo-router";
 
 export default function Home() {
 
@@ -30,6 +31,18 @@ export default function Home() {
         </View>
 
         <MissingPets />
+        <TouchableOpacity
+          onPress={() => {
+            router.push("/(pages)/petregister/PetRegister");
+          }}
+          className="px-6 mb-4"
+        >
+          <View className="bg-[#af8d66] rounded-xl py-3 items-center">
+            <Text className="text-white font-bold text-base">
+              Register new pet
+            </Text>
+          </View>
+        </TouchableOpacity>
         <MyPetList />
       </ScrollView>
 

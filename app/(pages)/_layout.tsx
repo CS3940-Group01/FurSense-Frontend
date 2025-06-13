@@ -7,6 +7,7 @@ const PagesLayout = () => {
                <Stack.Screen name="(tabs)" />
                <Stack.Screen name="sign-up" />
                <Stack.Screen name="pet/[id]" options={{ headerShown: true, title: 'Pet Details' }} />
+               <Stack.Screen name="petregister/PetRegister" options={{ headerShown: true, title: 'Register Pet' }}/>
          </Stack>
         );
     }
