@@ -1,21 +1,27 @@
 {
   "expo": {
-    "name": "Fursense-Frontend",
-    "slug": "Fursense-Frontend",
+    "name": "Fursense",
+    "slug": "Fursense",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/sign-in-logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sumuditha.fursense",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sumuditha.fursense",
+      "googleServicesFile": "./app/google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +42,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2073bf2f-9897-44f6-a6c4-4493ff75ca5a"
+      }
+    },
+    "owner": "sumuditha"
   }
 }

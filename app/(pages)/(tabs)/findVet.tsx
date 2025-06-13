@@ -12,22 +12,31 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 
 export default function FindVet() {
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [places, setPlaces] = useState<
-    { id: string; lat: number; lon: number; tags?: { name?: string; amenity?: string } }[]
+    {
+      id: string;
+      lat: number;
+      lon: number;
+      tags?: { name?: string; amenity?: string };
+    }[]
   >([]);
   const [loading, setLoading] = useState(false);
 
-  
   const [includePharmacies, setIncludePharmacies] = useState(false);
   const [includeVeterinary, setIncludeVeterinary] = useState(false);
 
-  
-  const [radius, setRadius] = useState("1000"); 
+  const [radius, setRadius] = useState("1000");
 
   const fetchPlaces = async () => {
     if (!includePharmacies && !includeVeterinary) {
-      Alert.alert("Error", "Please select at least one option (Pharmacies or Veterinary).");
+      Alert.alert(
+        "Error",
+        "Please select at least one option (Pharmacies or Veterinary)."
+      );
       return;
     }
 
@@ -86,20 +95,20 @@ export default function FindVet() {
       <View className="p-4 bg-gray-100">
         <View className="flex-row justify-between items-center ">
           <Text className="text-lg font-bold">Pharmacies</Text>
-            <Switch
-              value={includePharmacies}
-              onValueChange={setIncludePharmacies}
-              trackColor={{ false: "#ccc", true: "#f5deda" }} 
-              thumbColor={includePharmacies ? "#6e4c30" : "#f4f3f4"} 
-            />
+          <Switch
+            value={includePharmacies}
+            onValueChange={setIncludePharmacies}
+            trackColor={{ false: "#ccc", true: "#f5deda" }}
+            thumbColor={includePharmacies ? "#6e4c30" : "#f4f3f4"}
+          />
         </View>
         <View className="flex-row justify-between items-center ">
           <Text className="text-lg font-bold">Veterinary</Text>
           <Switch
             value={includeVeterinary}
             onValueChange={setIncludeVeterinary}
-            trackColor={{ false: "#ccc", true: "#f5deda" }} 
-            thumbColor={includeVeterinary ? "#6e4c30" : "#f4f3f4"} 
+            trackColor={{ false: "#ccc", true: "#f5deda" }}
+            thumbColor={includeVeterinary ? "#6e4c30" : "#f4f3f4"}
           />
         </View>
 
@@ -113,13 +122,16 @@ export default function FindVet() {
             placeholder="Enter radius"
             keyboardType="numeric"
             style={{
-              textAlignVertical: "center", 
-              paddingVertical: 0,        
+              textAlignVertical: "center",
+              paddingVertical: 0,
             }}
           />
         </View>
 
-        <TouchableOpacity className="bg-[#6e4c30] p-3 rounded items-center mt-8" onPress={fetchPlaces}>
+        <TouchableOpacity
+          className="bg-[#6e4c30] p-3 rounded items-center mt-8"
+          onPress={fetchPlaces}
+        >
           <Text className="text-white font-bold text-lg">Search</Text>
         </TouchableOpacity>
       </View>
