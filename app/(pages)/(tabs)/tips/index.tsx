@@ -14,63 +14,58 @@ import { useRouter } from "expo-router";
 const PET_IMAGES: Record<string, any> = {
   Dog: require("../../../../assets/images/petTips/dog.jpeg"),
   Cat: require("../../../../assets/images/petTips/cat.jpeg"),
-  Bird: require("../../../../assets/images/petTips/bird.jpeg"),
+  Parrot: require("../../../../assets/images/petTips/parrot.jpg"),
   Rabbit: require("../../../../assets/images/petTips/rabbit.jpg"),
-  Fish: require("../../../../assets/images/petTips/fish.jpeg"),
-  Hamster: require("../../../../assets/images/petTips/hamster.jpeg"),
-  Tortoise: require("../../../../assets/images/petTips/tortoise.jpeg"),
-  Pig: require("../../../../assets/images/petTips/pig.jpeg"),
+  Goldfish: require("../../../../assets/images/petTips/goldfish.jpeg"),
+  Pigeon: require("../../../../assets/images/petTips/pigeon.jpg"),
+  // Hamster: require("../../../../assets/images/petTips/hamster.jpeg"),
+  // Tortoise: require("../../../../assets/images/petTips/tortoise.jpeg"),
+  // Pig: require("../../../../assets/images/petTips/pig.jpeg"),
 };
 
 const petTips = [
   {
     type: "Dog",
-    tips: [
-      /* tips here */
-    ],
+    name: "Happy & Healthy Dogs: Care Essentials",
   },
   {
     type: "Cat",
-    tips: [
-      /* tips here */
-    ],
+    name: "How to Keep Your Cat Happy?",
   },
   {
-    type: "Bird",
-    tips: [
-      /* tips here */
-    ],
+    type: "Parrot",
+    name: "Parrot Health & Enrichment Essentials",
   },
   {
     type: "Rabbit",
-    tips: [
-      /* tips here */
-    ],
+    name: "Rabbits: Diet, Space & Safety",
   },
   {
-    type: "Fish",
-    tips: [
-      /* tips here */
-    ],
+    type: "Goldfish",
+    name: "Goldfish Tank Maintenance & Well-being",
   },
   {
-    type: "Hamster",
-    tips: [
-      /* tips here */
-    ],
+    type: "Pigeon",
+    name: "Caring for Your Feathered Friend",
   },
-  {
-    type: "Tortoise",
-    tips: [
-      /* tips here */
-    ],
-  },
-  {
-    type: "Pig",
-    tips: [
-      /* tips here */
-    ],
-  },
+  // {
+  //   type: "Hamster",
+  //   tips: [
+  //     /* tips here */
+  //   ],
+  // },
+  // {
+  //   type: "Tortoise",
+  //   tips: [
+  //     /* tips here */
+  //   ],
+  // },
+  // {
+  //   type: "Pig",
+  //   tips: [
+  //     /* tips here */
+  //   ],
+  // },
 ];
 
 const funFacts: Record<string, string[]> = {
@@ -82,30 +77,34 @@ const funFacts: Record<string, string[]> = {
     "Cats sleep nearly 70% of their lives.",
     "A group of cats is called a clowder.",
   ],
-  Bird: [
+  Parrot: [
     "Some parrots can mimic human speech.",
-    "Birds are the only animals with feathers.",
+    "Parrots are highly intelligent and can solve puzzles and use tools.",
   ],
   Rabbit: [
     "Rabbits purr when they’re happy!",
     "Their teeth never stop growing.",
   ],
-  Fish: [
+  Goldfish: [
     "Goldfish have 3-month memories!",
     "Some fish can recognize their owners.",
   ],
-  Hamster: [
-    "Hamsters run up to 5 miles at night.",
-    "They hoard food in their cheek pouches.",
+  Pigeon: [
+    "Pigeons can recognize themselves in mirrors—just like dolphins and apes!",
+    "They were used as message carriers in World War I and II.",
   ],
-  Tortoise: [
-    "Tortoises can live over 100 years!",
-    "They can survive without food for weeks.",
-  ],
-  Pig: [
-    "Guinea pigs need vitamin C daily!",
-    "They communicate using over 10 sounds.",
-  ],
+  // Hamster: [
+  //   "Hamsters run up to 5 miles at night.",
+  //   "They hoard food in their cheek pouches.",
+  // ],
+  // Tortoise: [
+  //   "Tortoises can live over 100 years!",
+  //   "They can survive without food for weeks.",
+  // ],
+  // Pig: [
+  //   "Guinea pigs need vitamin C daily!",
+  //   "They communicate using over 10 sounds.",
+  // ],
 };
 
 type PetType = keyof typeof funFacts;
@@ -147,7 +146,7 @@ const FlipCard = ({ pet, image }) => {
     setFlipped(!flipped);
   };
 
-  const cardHeight = 220 + Math.max(0, (pet.tips.length - 3) * 28);
+  const cardHeight = 220;
 
   return (
     <TouchableOpacity
@@ -200,7 +199,7 @@ const FlipCard = ({ pet, image }) => {
             }}
           >
             <Text
-              className="text-white text-4xl font-extrabold text-center mb-2"
+              className="text-white text-2xl font-extrabold text-center mb-2"
               style={{
                 textShadowColor: "#000",
                 textShadowOffset: { width: 1, height: 2 },
@@ -212,7 +211,7 @@ const FlipCard = ({ pet, image }) => {
                 paddingVertical: 6,
               }}
             >
-              {pet.type}
+              {pet.name}
             </Text>
             <Text className="text-white text-base mt-2 opacity-90 text-center italic">
               Tap to open tips page

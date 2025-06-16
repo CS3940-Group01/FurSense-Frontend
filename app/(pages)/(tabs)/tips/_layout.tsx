@@ -10,12 +10,10 @@ const TipsLayout = () => {
       <Stack.Screen name="index" />
       <Stack.Screen name="dog" />
       <Stack.Screen name="cat" />
-      <Stack.Screen name="fish" />
-      <Stack.Screen name="bird" />
+      <Stack.Screen name="goldfish" />
+      <Stack.Screen name="parrot" />
       <Stack.Screen name="rabbit" />
-      <Stack.Screen name="hamster" />
-      <Stack.Screen name="tortoise" />
-      <Stack.Screen name="pig" />
+      <Stack.Screen name="pigeon" />
     </Stack>
   );
 };
