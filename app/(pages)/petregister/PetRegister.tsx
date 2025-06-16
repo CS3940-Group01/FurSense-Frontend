@@ -123,7 +123,7 @@ const PetRegister: React.FC = () => {
       age: calculateAge(birthDate),
       image: imageUrl,
       birthDate: birthDate.toISOString(),
-      ownerId: 8,
+      // ownerId: 8,
     };
 
     try {

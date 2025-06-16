@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ImageBackground, Text, View, TouchableOpacity, ScrollView, Dimensions } from "react-native";
+import {
+  ImageBackground,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useAxiosSecure } from "@/lib/axiosSecure";
 
@@ -22,7 +29,7 @@ const MyPetList: React.FC = () => {
   useEffect(() => {
     const getPetList = async () => {
       try {
-        const response = await axiosSecure.get("/pet/getPetsByOwnerId?ownerId=8");
+        const response = await axiosSecure.get("/pet/getPetsByOwnerId");
         console.log("response in petlist", response.data);
         setPetList(response.data);
       } catch (error) {
@@ -32,14 +39,13 @@ const MyPetList: React.FC = () => {
     getPetList();
   }, []);
 
-const handleNavigate = (pet: Pet) => {
-  const petParam = encodeURIComponent(JSON.stringify(pet));
-  router.push({
-    pathname: "/pet/[id]",
-    params: { id: String(pet.id), pet: petParam },
-  });
-};
-
+  const handleNavigate = (pet: Pet) => {
+    const petParam = encodeURIComponent(JSON.stringify(pet));
+    router.push({
+      pathname: "/pet/[id]",
+      params: { id: String(pet.id), pet: petParam },
+    });
+  };
 
   return (
     <ScrollView className="mt-4">
@@ -122,7 +128,9 @@ const handleNavigate = (pet: Pet) => {
                       shadowRadius: 4,
                     }}
                   >
-                    <Text style={{ color: "#444", fontWeight: "600", fontSize: 14 }}>
+                    <Text
+                      style={{ color: "#444", fontWeight: "600", fontSize: 14 }}
+                    >
                       {pet.type}
                     </Text>
                   </View>
