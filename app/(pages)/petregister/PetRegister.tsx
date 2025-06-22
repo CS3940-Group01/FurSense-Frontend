@@ -29,6 +29,8 @@ interface VaccineWithDates extends Vaccine {
 const PetRegister: React.FC = () => {
   const [petName, setPetName] = useState("");
   const [petType, setPetType] = useState("Dog");
+  const [breed, setBreed] = useState("");
+  const [breeds, setBreeds] = useState<string[]>([]);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [birthDate, setBirthDate] = useState(new Date());
@@ -44,7 +46,7 @@ const PetRegister: React.FC = () => {
   const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
-    const fetchVaccines = async () => {
+    const fetchVaccinesAndBreeds = async () => {
       try {
         const response = await axiosSecure.get(
           `/vaccine/getVaccinesBySpecies`,
@@ -53,11 +55,26 @@ const PetRegister: React.FC = () => {
           }
         );
         setVaccines(response.data);
+
+        // Example breed data – replace with API if needed
+        const breedOptions: Record<string, string[]> = {
+          Dog: ["Labrador", "German Shepherd", "Bulldog", "Boxer", "Shih Tzu"],
+          Cat: ["Persian", "Siamese", "Maine Coon"],
+          Parrot: ["African Grey", "Macaw", "Cockatiel"],
+          Rabbit: ["Angora", "Lionhead", "Dutch"],
+          Goldfish: ["Comet", "Fantail", "Oranda"],
+          Pigeon: ["Homing", "Fantail", "Roller"],
+        };
+
+        setBreeds(breedOptions[petType] || []);
+        setBreed(""); // Reset breed when pet type changes
+        console.log("Selected Pet Type:", petType);
+        console.log("Available Breeds:", breedOptions[petType]);
       } catch (error) {
-        console.error("Error fetching vaccines:", error);
+        // console.error("Error fetching vaccines or breeds:", error);
       }
     };
-    fetchVaccines();
+    fetchVaccinesAndBreeds();
   }, [petType]);
 
   useEffect(() => {
@@ -100,7 +117,7 @@ const PetRegister: React.FC = () => {
       setImageUploading(false);
       return response.data.secure_url;
     } catch (err) {
-      console.error("Cloudinary upload error:", err);
+      // console.error("Cloudinary upload error:", err);
       setImageUploading(false);
       return null;
     }
@@ -159,7 +176,7 @@ const PetRegister: React.FC = () => {
         vaccines.map((v) => ({ ...v, lastGivenDate: null, nextDueDate: null }))
       );
     } catch (error) {
-      console.error("Submit error:", error);
+      // console.error("Submit error:", error);
       Alert.alert("Error", "Failed to save data.");
     }
   };
@@ -186,6 +203,25 @@ const PetRegister: React.FC = () => {
           <Picker selectedValue={petType} onValueChange={setPetType}>
             <Picker.Item label="Dog" value="Dog" />
             <Picker.Item label="Cat" value="Cat" />
+            <Picker.Item label="Parrot" value="Parrot" />
+            <Picker.Item label="Rabbit" value="Rabbit" />
+            <Picker.Item label="Goldfish" value="Goldfish" />
+            <Picker.Item label="Pigeon" value="Pigeon" />
+          </Picker>
+        </View>
+
+        {/* Pet Breed */}
+        <Text className="mb-1 text-gray-700">Breed</Text>
+        <View className="border border-gray-300 rounded-xl mb-4 bg-gray-100 overflow-hidden">
+          <Picker
+            selectedValue={breed}
+            onValueChange={(value) => setBreed(value)}
+            enabled={breeds.length > 0}
+          >
+            <Picker.Item label="Select Breed" value="" />
+            {breeds.map((b) => (
+              <Picker.Item key={b} label={b} value={b} />
+            ))}
           </Picker>
         </View>
 

@@ -66,7 +66,9 @@ export default function SignInScreen() {
     console.log("Password:", password);
 
     axios
-      .post("http://10.0.2.2:8080/auth/login", { username, password })
+      // .post("http://10.10.23.106:8080/auth/login", { username, password })
+      .post("http://54.172.216.211:8080/auth/login", { username, password })
+
       .then((response) => {
         console.log("Login response:", response);
 
@@ -82,22 +84,22 @@ export default function SignInScreen() {
         }
       })
       .catch((error) => {
-        console.error("Login error:", error.message);
+        // console.error("Login error:", error.message);
 
         if (error.response) {
           // Server responded with a status code outside 2xx
-          console.error("Server responded with:");
-          console.error("Status:", error.response.status);
-          console.error("Data:", error.response.data);
+          // console.error("Server responded with:");
+          // console.error("Status:", error.response.status);
+          // console.error("Data:", error.response.data);
           Alert.alert("Login Failed", `Server error: ${error.response.status}`);
         } else if (error.request) {
           // Request was made but no response received
-          console.error("No response received. Request was:");
-          console.error(error.request);
+          // console.error("No response received. Request was:");
+          // console.error(error.request);
           Alert.alert("Network Error", "No response from server.");
         } else {
           // Something else caused the error
-          console.error("Unexpected error:", error.message);
+          // console.error("Unexpected error:", error.message);
           Alert.alert("Error", `Something went wrong: ${error.message}`);
         }
       });

@@ -44,7 +44,7 @@ const FurBot = () => {
         setMessages(fetchedMessages.reverse()); // Keep latest at top if using inverted FlatList
         setMessageId(fetchedMessages.length + 1);
       } catch (error) {
-        console.error("Error fetching chat history:", error);
+        // console.error("Error fetching chat history:", error);
       }
     };
 
@@ -105,7 +105,7 @@ const FurBot = () => {
       ]);
       setMessageId((prev) => prev + 1);
     } catch (error) {
-      console.error("Chat API error:", error);
+      // console.error("Chat API error:", error);
       setMessages((prev) => [
         {
           id: (messageId + 1).toString(),

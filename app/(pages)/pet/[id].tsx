@@ -18,6 +18,7 @@ const PetProfile: React.FC = () => {
   const axiosSecure = useAxiosSecure();
   const { pet } = useLocalSearchParams();
 
+  const [vaccineHistory, setVaccineHistory] = useState<any[]>([]);
   const [petData, setPetData] = useState<any>(null);
   const [vaccineSchedule, setVaccineSchedule] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ const PetProfile: React.FC = () => {
       const parsed = pet ? JSON.parse(decodeURIComponent(pet as string)) : null;
       setPetData(parsed);
     } catch (err) {
-      console.error("Invalid pet param", err);
+      // console.error("Invalid pet param", err);
       setError("Invalid pet data.");
       setLoading(false);
     }
@@ -47,15 +48,28 @@ const PetProfile: React.FC = () => {
       setVaccineSchedule(response.data);
       setError(null);
     } catch (err) {
-      console.error("Failed to fetch vaccine schedule", err);
+      // console.error("Failed to fetch vaccine schedule", err);
       setError("Failed to load vaccine schedule.");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchVaccineHistory = async () => {
+    if (!petData?.id) return;
+    try {
+      const response = await axiosSecure.get(
+        `/vaccine/getVaccineLog/${petData.id}`
+      );
+      setVaccineHistory(response.data);
+    } catch (err) {
+      // console.error("Failed to fetch vaccine history", err);
+    }
+  };
+
   useEffect(() => {
     fetchVaccineSchedule();
+    fetchVaccineHistory();
   }, [petData]);
 
   const openModal = (vaccine: any) => {
@@ -81,8 +95,9 @@ const PetProfile: React.FC = () => {
       Alert.alert("Success", "Vaccine log added successfully!");
       setModalVisible(false);
       fetchVaccineSchedule(); // Refresh the schedule after logging vaccine
+      fetchVaccineHistory();
     } catch (err) {
-      console.error("Failed to add vaccine log", err);
+      // console.error("Failed to add vaccine log", err);
       Alert.alert("Error", "Failed to log vaccine. Please try again.");
     }
   };
@@ -99,7 +114,9 @@ const PetProfile: React.FC = () => {
   if (error || !petData) {
     return (
       <View className="flex-1 justify-center items-center bg-[#f5deda]">
-        <Text className="text-red-500 text-lg">{error || "Invalid or missing pet data."}</Text>
+        <Text className="text-red-500 text-lg">
+          {error || "Invalid or missing pet data."}
+        </Text>
       </View>
     );
   }
@@ -112,17 +129,27 @@ const PetProfile: React.FC = () => {
             source={{ uri: petData.image }}
             className="w-48 h-48 rounded-full border-4 border-[#af8d66] mb-4"
           />
-          <Text className="text-3xl font-bold text-[#4f46e5]">{petData.name}</Text>
-          <Text className="text-lg text-gray-700 mt-1">Species: {petData.type}</Text>
-          <Text className="text-lg text-gray-700">Age: {petData.age} years</Text>
+          <Text className="text-3xl font-bold text-[#4f46e5]">
+            {petData.name}
+          </Text>
+          <Text className="text-lg text-gray-700 mt-1">
+            Species: {petData.type}
+          </Text>
+          <Text className="text-lg text-gray-700">
+            Age: {petData.age} years
+          </Text>
           <Text className="text-lg text-gray-700">
             Birth Date: {new Date(petData.birthDate).toLocaleDateString()}
           </Text>
 
-          <Text className="text-2xl font-semibold text-[#16a34a] mt-8 mb-4">Vaccine Schedule</Text>
+          <Text className="text-2xl font-semibold text-[#16a34a] mt-8 mb-4">
+            Vaccine Schedule
+          </Text>
 
           {vaccineSchedule.length === 0 ? (
-            <Text className="text-base text-gray-500">No vaccine schedule found.</Text>
+            <Text className="text-base text-gray-500">
+              No vaccine schedule found.
+            </Text>
           ) : (
             vaccineSchedule.map((vaccine, index) => (
               <TouchableOpacity
@@ -130,26 +157,65 @@ const PetProfile: React.FC = () => {
                 className="w-full bg-white p-4 rounded-2xl shadow mb-4"
                 onPress={() => openModal(vaccine)}
               >
-                <Text className="text-lg font-bold text-[#6366f1]">{vaccine.vaccineId}</Text>
+                <Text className="text-lg font-bold text-[#6366f1]">
+                  {vaccine.vaccineId}
+                </Text>
                 <Text className="text-sm text-gray-700 mt-1">
                   {(() => {
                     const dueDate = new Date(vaccine.nextDueDate);
                     const today = new Date();
                     const diffInMs = dueDate.getTime() - today.getTime();
-                    const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+                    const diffInDays = Math.ceil(
+                      diffInMs / (1000 * 60 * 60 * 24)
+                    );
                     const formatted = dueDate.toLocaleDateString();
 
                     if (diffInDays > 7) {
                       const weeks = Math.floor(diffInDays / 7);
-                      return `Due on ${formatted} (${weeks} week${weeks > 1 ? "s" : ""} left)`;
+                      return `Due on ${formatted} (${weeks} week${
+                        weeks > 1 ? "s" : ""
+                      } left)`;
                     } else if (diffInDays >= 0) {
-                      return `Due on ${formatted} (${diffInDays} day${diffInDays > 1 ? "s" : ""} left)`;
+                      return `Due on ${formatted} (${diffInDays} day${
+                        diffInDays > 1 ? "s" : ""
+                      } left)`;
                     } else {
-                      return `Was due on ${formatted} (overdue by ${Math.abs(diffInDays)} day${Math.abs(diffInDays) > 1 ? "s" : ""})`;
+                      return `Was due on ${formatted} (overdue by ${Math.abs(
+                        diffInDays
+                      )} day${Math.abs(diffInDays) > 1 ? "s" : ""})`;
                     }
                   })()}
                 </Text>
               </TouchableOpacity>
+            ))
+          )}
+        </View>
+        <View className="items-center p-6">
+          <Text className="text-2xl font-semibold text-[#ef4444] mt-8 mb-4">
+            Vaccine History
+          </Text>
+
+          {vaccineHistory.length === 0 ? (
+            <Text className="text-base text-gray-500">
+              No vaccine history available.
+            </Text>
+          ) : (
+            vaccineHistory.map((entry, index) => (
+              <View
+                key={index}
+                className="w-full bg-white p-4 rounded-2xl shadow mb-4"
+              >
+                <Text className="text-lg font-bold text-[#6366f1]">
+                  {entry.vaccineId}
+                </Text>
+                <Text className="text-sm text-gray-700 mt-1">
+                  Administered On:{" "}
+                  {new Date(entry.administeredOn).toLocaleDateString()}
+                </Text>
+                <Text className="text-sm text-gray-700">
+                  By: {entry.vetName || "Unknown"}
+                </Text>
+              </View>
             ))
           )}
         </View>
@@ -164,7 +230,9 @@ const PetProfile: React.FC = () => {
       >
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
           <View className="bg-white rounded-2xl p-6 w-80">
-            <Text className="text-xl font-semibold mb-4">Record Vaccine Injection</Text>
+            <Text className="text-xl font-semibold mb-4">
+              Record Vaccine Injection
+            </Text>
             <Text className="mb-2">Vaccine: {selectedVaccine?.vaccineId}</Text>
 
             <TextInput
@@ -187,7 +255,9 @@ const PetProfile: React.FC = () => {
                 className="bg-[#16a34a] px-4 py-2 rounded-md"
                 onPress={submitVaccineLog}
               >
-                <Text className="text-white font-semibold">Confirm Injection</Text>
+                <Text className="text-white font-semibold">
+                  Confirm Injection
+                </Text>
               </Pressable>
             </View>
           </View>

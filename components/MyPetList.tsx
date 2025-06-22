@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAxiosSecure } from "@/lib/axiosSecure";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 interface Pet {
   id: number;
@@ -26,18 +28,21 @@ const MyPetList: React.FC = () => {
   const [petList, setPetList] = useState<Pet[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const getPetList = async () => {
-      try {
-        const response = await axiosSecure.get("/pet/getPetsByOwnerId");
-        console.log("response in petlist", response.data);
-        setPetList(response.data);
-      } catch (error) {
-        console.error("Error fetching pet list:", error);
-      }
-    };
-    getPetList();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const getPetList = async () => {
+        try {
+          const response = await axiosSecure.get("/pet/getPetsByOwnerId");
+          console.log("response in petlist", response.data);
+          setPetList(response.data);
+        } catch (error) {
+          // console.error("Error fetching pet list:", error);
+        }
+      };
+
+      getPetList();
+    }, [])
+  );
 
   const handleNavigate = (pet: Pet) => {
     const petParam = encodeURIComponent(JSON.stringify(pet));
