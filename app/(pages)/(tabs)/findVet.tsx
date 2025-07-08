@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Linking } from "react-native";
 import {
   View,
   ActivityIndicator,
@@ -16,6 +17,11 @@ export default function FindVet() {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
   const [places, setPlaces] = useState<
     {
       id: string;
@@ -29,7 +35,7 @@ export default function FindVet() {
   const [includePharmacies, setIncludePharmacies] = useState(false);
   const [includeVeterinary, setIncludeVeterinary] = useState(false);
 
-  const [radius, setRadius] = useState("1000");
+  const [radius, setRadius] = useState("1");
 
   const fetchPlaces = async () => {
     if (!includePharmacies && !includeVeterinary) {
@@ -61,10 +67,14 @@ export default function FindVet() {
       // Construct dynamic query based on selected options
       let query = `[out:json];(`;
       if (includePharmacies) {
-        query += `node["amenity"="pharmacy"](around:${radius},${loc.coords.latitude},${loc.coords.longitude});`;
+        query += `node["amenity"="pharmacy"](around:${Number(radius) * 1000},${
+          loc.coords.latitude
+        },${loc.coords.longitude});`;
       }
       if (includeVeterinary) {
-        query += `node["amenity"="veterinary"](around:${radius},${loc.coords.latitude},${loc.coords.longitude});`;
+        query += `node["amenity"="veterinary"](around:${
+          Number(radius) * 1000
+        },${loc.coords.latitude},${loc.coords.longitude});`;
       }
       query += `);out body;`;
 
@@ -114,7 +124,7 @@ export default function FindVet() {
 
         {/* Radius Input */}
         <View className="flex-row justify-between items-center">
-          <Text className="text-lg font-bold">Radius (meters):</Text>
+          <Text className="text-lg font-bold">Radius (km):</Text>
           <TextInput
             className="h-10 border border-gray-300 rounded px-2 bg-white w-24"
             value={radius}
@@ -154,6 +164,18 @@ export default function FindVet() {
               coordinate={{ latitude: place.lat, longitude: place.lon }}
               title={place.tags?.name || "Unnamed"}
               description={place.tags?.amenity}
+              onPress={() => {
+                setSelectedDestination({
+                  latitude: place.lat,
+                  longitude: place.lon,
+                });
+                if (location) {
+                  const url = `https://www.google.com/maps/dir/?api=1&origin=${location.latitude},${location.longitude}&destination=${place.lat},${place.lon}&travelmode=driving`;
+                  Linking.openURL(url);
+                } else {
+                  Alert.alert("Error", "Current location not available");
+                }
+              }}
             />
           ))}
         </MapView>
