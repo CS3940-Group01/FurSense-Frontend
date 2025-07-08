@@ -1,50 +1,99 @@
-# Welcome to your Expo app 👋
+# 🐾 FurSense Frontend – React Native App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is the **mobile frontend** for **FurSense** – a smart pet care application developed to support Sri Lankan pet owners in managing their pets' health, vaccination schedules, emergency services, and more.
 
-## Get started
+---
 
-1. Install dependencies
+## 📄 Overview
 
-   ```bash
-   npm install
-   ```
+The FurSense frontend is built with **React Native** using **Expo** and provides a cross-platform experience for both Android and iOS users. It connects to a microservices-based backend and includes:
 
-2. Start the app
+- Smooth and modern UI with utility-based styling using Tailwind
+- Custom navigation with `expo-router`
+- Integrated support for authentication, pet management, AI chatbot (FurBot), reminders, and lost pet alerts
+- Maps integration with toggle filters for veterinary services and pharmacies
+- Seamless notification system using Expo push services
 
-   ```bash
-    npx expo start
-   ```
+The frontend is modular, well-structured, and supports both local state and global context to manage user sessions and app data efficiently.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 📱 Features
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- 🐶 Register and manage multiple pets 
+- 📅 Auto-scheduled vaccination reminders
+- 💬 AI-powered chatbot (**FurBot**) for pet health queries
+- 🗺️ Toggle-based map to find nearby veterinarians and pharmacies
+- 📚 Tips section for pet care, grooming, and nutrition
+- 🔔 Push notifications for reminders and alerts
+- 🚨 Lost pet alert system to notify the local pet community
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## ⚙️ Tech Stack
 
-```bash
-npm run reset-project
+- **React Native** with **Expo**
+- **Tailwind CSS** 
+- **React Navigation** (`expo-router`)
+- **Axios** for API communication
+- **Expo Push Notifications**
+
+---
+
+## 🧱 Folder Structure
+```
+frontend/
+├── app/
+│ ├── index.tsx # Home screen
+│ |     └── details/ # Pet details
+│ ├── (auth)/ # SignIn / SignUp
+│ ├── register/ # Pet registration
+│ ├── chatbot/ # FurBot chat screen
+│ ├── findvet/ # Map screen
+│ ├── tips/ # Pet care articles
+
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 🚀 Getting Started
 
-To learn more about developing your project with Expo, look at the following resources:
+### ✅ Prerequisites
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **Node.js** v18 or above
+- **Expo CLI** (install globally)
 
-## Join the community
+```bash
+npm install -g expo-cli
+```
+---
 
-Join our community of developers creating universal apps.
+## 🔧 Setup Instructions
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 1. Clone the repository
+```bash
+git clone https://github.com/CS3940-Group01/FurSense-Frontend.git
+```
+
+### 2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+### 3. start the app
+```bash
+npx expo start
+```
+---
+## 👥 Team
+
+- **210194H** - Gunasekara S.L.
+- **210302P** - Kulasekara K.M.S.N.
+- **210306G** - Kulathunga K.A.J.T.
+- **210314E** - Kumarasekara G.K.
+- **210434V** - Niroshan G.
+
+---
+
+**Built with ❤️ for pet owners in Sri Lanka**
